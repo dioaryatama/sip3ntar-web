@@ -134,8 +134,6 @@ const MapComponent: React.FC<MapProps> = ({
     });
   };
 
-  console.log("MapComponent rendering with layers:", geojsonTypes);
-
   return (
     <MapContainer
       center={center}
