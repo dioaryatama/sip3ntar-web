@@ -1,9 +1,17 @@
 "use client";
 
-import { MapContainer, TileLayer, GeoJSON, LayersControl } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  LayersControl,
+  FeatureGroup,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { EditControl } from "react-leaflet-draw";
 import type { FeatureCollection } from "geojson";
+import "leaflet-draw/dist/leaflet.draw.css";
 
 import btJson from "@/public/RENCANA_POLA_RUANG_BATANGKUIS_AR.json";
 import lbJson from "@/public/RENCANA_POLA_RUANG_LABUHANDELIPERCUTSEITUAN_AR.json";
@@ -74,8 +82,10 @@ const MapComponent: React.FC<MapProps> = ({
   };
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
-    layer.on("click", () => {
+    layer.on("click", (e: any) => {
       const p = feature?.properties;
+      const lat = e.latlng.lat.toFixed(6);
+      const lng = e.latlng.lng.toFixed(6);
       const rows = `
           <tr>
             <td style="text-color:#000; text-transform: uppercase; font-weight:800; padding:4px; border-bottom:1px solid #ddd;">
@@ -101,8 +111,12 @@ const MapComponent: React.FC<MapProps> = ({
             <td style="padding:4px; border-bottom:1px solid #ddd;">
               ${p.WADMKD ?? "-"}
             </td>
-          </tr>`;
-
+          </tr>
+          <td style="padding:4px; border-bottom:1px solid #ddd;">
+            Latitude:  ${lat ?? "-"} - Longtitude:  ${lng ?? "-"}
+            </td>
+            </tr>
+            `;
       const popupContent = `
       <div style="max-height:250px; overflow:auto;">
         <table style="width:100%; border-collapse: collapse; font-size:14px;">
@@ -132,6 +146,23 @@ const MapComponent: React.FC<MapProps> = ({
         fillOpacity: 0.8, // sesuai style awal
       });
     });
+  };
+  const onCreated = (e: any) => {
+    const layer = e.layer;
+
+    let latlngText = "";
+
+    if (layer.getLatLng) {
+      const { lat, lng } = layer.getLatLng();
+      latlngText = `Latitude: ${lat}<br/>Longitude: ${lng}`;
+    } else if (layer.getLatLngs) {
+      const latlngs = layer.getLatLngs()[0] || layer.getLatLngs();
+      latlngText = latlngs
+        .map((c: any, i: number) => `Point ${i + 1}: ${c.lat} , ${c.lng}`)
+        .join("<br/>");
+    }
+
+    layer.bindPopup(`<b>Koordinat</b><br/>${latlngText}`).openPopup();
   };
 
   return (
@@ -199,6 +230,42 @@ const MapComponent: React.FC<MapProps> = ({
           />
         </LayersControl.Overlay>
       </LayersControl>
+
+      <FeatureGroup>
+        <EditControl
+          position="topleft"
+          onCreated={onCreated}
+          draw={{
+            polyline: {
+              icon: new L.DivIcon({
+                iconSize: new L.Point(8, 8),
+                className: "leaflet-div-icon leaflet-editing-icon",
+              }),
+              shapeOptions: {
+                guidelineDistance: 10,
+                color: "navy",
+                weight: 3,
+              },
+            },
+            rectangle: true,
+            circlemarker: false,
+            circle: true,
+            polygon: true,
+            marker: {
+              icon: new L.Icon({
+                iconRetinaUrl:
+                  "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+                iconUrl:
+                  "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+                shadowUrl:
+                  "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+              }),
+            },
+          }}
+        />
+      </FeatureGroup>
     </MapContainer>
   );
 };
