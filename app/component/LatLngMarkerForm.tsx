@@ -25,7 +25,7 @@ export default function LatLngMarkerForm({ onSubmit }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="absolute top-90 right-4 z-[999] bg-white p-3 shadow-md rounded-md space-y-2 w-74"
+      className="absolute top-90 right-4 z-[999] bg-white p-3 shadow-md rounded-md space-y-2 w-74 hidden lg:flex lg:flex-col"
     >
       <h3 className="font-bold text-sm">Input Koordinat</h3>
       <input
