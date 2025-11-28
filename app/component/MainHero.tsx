@@ -3,25 +3,27 @@
 import { FileText, Building2, ScrollText, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import welcomeImage from "@/app/assets/Banner_Popup.png";
-import backgroundImage from "@/app/assets/BG_SIPENTAR.png";
-import dinasLogo from "@/app/assets/LOGO_PEMKAB.png";
-import sipNyarLogo from "@/app/assets/LOGO_SIPENTAR.png";
+import welcomeImage from "@/app/assets/images/Banner_Popup.png";
+import backgroundImage from "@/app/assets/images/BG_SIPENTAR.png";
+import dinasLogo from "@/app/assets/images/LOGO_PEMKAB.png";
+import sipNyarLogo from "@/app/assets/images/LOGO_SIPENTAR.png";
 import Link from "next/link";
 // import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 const menuItems = [
   {
     icon: Building2,
-    title: "Peta RTRW",
+    title: "Informasi RTRW",
     gradient: "from-blue-700 to-cyan-700",
     bgGlow: "bg-blue-700/20",
+    href: "/rtrw",
   },
   {
     icon: FileText,
-    title: "Peta RDTR",
+    title: "Informasi RDTR",
     gradient: "from-purple-700 to-pink-700",
     bgGlow: "bg-purple-700/20",
+    href: "/rdtr",
   },
   //   {
   //     icon: Satellite,
@@ -40,6 +42,7 @@ const menuItems = [
     title: "Informasi Peraturan Lainnya",
     gradient: "from-indigo-700 to-blue-700",
     bgGlow: "bg-indigo-700/20",
+    href: "/informasi-peraturan",
   },
 ];
 
@@ -148,23 +151,23 @@ export function MainHero() {
             </motion.p>
           </motion.div>
           {/* Modern Menu Cards */}
-          <Link href="/rdtr">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mb-12 px-4">
-              {menuItems.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <motion.button
-                    key={index}
-                    className="group relative"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.1,
-                    }}
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mb-12 px-4">
+            {menuItems.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <motion.button
+                  key={index}
+                  className="group relative"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: index * 0.1,
+                  }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link href={item.href}>
                     {/* Glow effect on hover */}
                     <div
                       className={`absolute inset-0 ${item.bgGlow} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
@@ -188,11 +191,11 @@ export function MainHero() {
                       {/* Shine effect */}
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </Link>
+                  </Link>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Modern Footer */}

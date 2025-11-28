@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  MapContainer,
-  TileLayer,
-  GeoJSON,
-  LayersControl,
-  FeatureGroup,
-} from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, FeatureGroup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { EditControl } from "react-leaflet-draw";
@@ -17,9 +11,12 @@ import btJson from "@/public/RENCANA_POLA_RUANG_BATANGKUIS_AR.json";
 import lbJson from "@/public/RENCANA_POLA_RUANG_LABUHANDELIPERCUTSEITUAN_AR.json";
 import brJson from "@/public/RENCANA_POLA_RUANG_PANTAILABUBERINGIN_AR.json";
 import ptJson from "@/public/RENCANA_POLA_RUANG_PATUMBAK_AR.json";
-import { style } from "./style";
 
-// JSON type-safe
+import { style } from "./style";
+import { useState } from "react";
+import GroupControl from "./GroupControl";
+
+// JSON to type-safe
 const bt = btJson as FeatureCollection;
 const lb = lbJson as FeatureCollection;
 const br = brJson as FeatureCollection;
@@ -43,7 +40,7 @@ export interface MapProps {
   geojsonTypes: LayerType[];
 }
 
-// UTIL: Random color generator
+// UTIL random color generator
 const stringToColor = (str: string): string => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -64,14 +61,20 @@ const MapComponent: React.FC<MapProps> = ({
   viewType = "default",
   geojsonTypes,
 }) => {
+  const [selectedLayers, setSelectedLayers] = useState<string[]>(geojsonTypes);
+
+  const toggleLayer = (key: string) => {
+    setSelectedLayers((prev) =>
+      prev.includes(key) ? prev.filter((l) => l !== key) : [...prev, key]
+    );
+  };
+
   const layerMap: Record<LayerType, FeatureCollection> = { lb, bt, br, pt };
 
   const getFeatureStyle = (feature: any) => {
     const featureName =
       feature?.properties?.NAMOBJ || String(feature?.id) || "default";
-
     const matchedStyle = style.find((s) => s.name === featureName);
-
     return {
       weight: 0,
       fillColor: matchedStyle
@@ -86,37 +89,15 @@ const MapComponent: React.FC<MapProps> = ({
       const p = feature?.properties;
       const lat = e.latlng.lat.toFixed(6);
       const lng = e.latlng.lng.toFixed(6);
+
       const rows = `
-          <tr>
-            <td style="text-color:#000; text-transform: uppercase; font-weight:800; padding:4px; border-bottom:1px solid #ddd;">
-              ${p.NAMOBJ ?? "-"}
-            </td>
-            </tr>
-            <tr>
-            <td style="padding:4px; border-bottom:1px solid #ddd;">
-              ${p.WADMPR ?? "-"}
-            </td>
-            </tr>
-            <tr>
-            <td style="padding:4px; border-bottom:1px solid #ddd;">
-              ${p.WADMKK ?? "-"}
-            </td>
-            </tr>
-            <tr>
-            <td style="padding:4px; border-bottom:1px solid #ddd;">
-              ${p.WADMKC ?? "-"}
-            </td>
-            </tr>
-            <tr>
-            <td style="padding:4px; border-bottom:1px solid #ddd;">
-              ${p.WADMKD ?? "-"}
-            </td>
-          </tr>
-          <td style="padding:4px; border-bottom:1px solid #ddd;">
-            Latitude:  ${lat ?? "-"} - Longtitude:  ${lng ?? "-"}
-            </td>
-            </tr>
-            `;
+          <tr><td style="font-weight:800;">${p.NAMOBJ ?? "-"}</td></tr>
+          <tr><td>${p.WADMPR ?? "-"}</td></tr>
+          <tr><td>${p.WADMKK ?? "-"}</td></tr>
+          <tr><td>${p.WADMKC ?? "-"}</td></tr>
+          <tr><td>Latitude: ${lat} / Longitude: ${lng}</td></tr>
+      `;
+
       const popupContent = `
       <div style="max-height:250px; overflow:auto;">
         <table style="width:100%; border-collapse: collapse; font-size:14px;">
@@ -127,42 +108,31 @@ const MapComponent: React.FC<MapProps> = ({
       layer.bindPopup(popupContent).openPopup();
     });
 
-    // Hover effect
     layer.on("mouseover", () => {
-      // cast ke L.Path agar TypeScript tidak error
-      const pathLayer = layer as L.Path;
-      pathLayer.setStyle({
-        weight: 2,
-        color: "#000", // border highlight biru
-        fillOpacity: 1,
-      });
-      pathLayer.bringToFront();
+      (layer as L.Path).setStyle({ weight: 2, color: "#000", fillOpacity: 1 });
+      (layer as L.Path).bringToFront();
     });
 
     layer.on("mouseout", () => {
-      const pathLayer = layer as L.Path;
-      pathLayer.setStyle({
-        weight: 0,
-        fillOpacity: 0.8, // sesuai style awal
-      });
+      (layer as L.Path).setStyle({ weight: 0, fillOpacity: 0.8 });
     });
   };
+
   const onCreated = (e: any) => {
     const layer = e.layer;
 
-    let latlngText = "";
-
+    let coords = "";
     if (layer.getLatLng) {
       const { lat, lng } = layer.getLatLng();
-      latlngText = `Latitude: ${lat}<br/>Longitude: ${lng}`;
+      coords = `Latitude: ${lat}<br/>Longitude: ${lng}`;
     } else if (layer.getLatLngs) {
       const latlngs = layer.getLatLngs()[0] || layer.getLatLngs();
-      latlngText = latlngs
+      coords = latlngs
         .map((c: any, i: number) => `Point ${i + 1}: ${c.lat} , ${c.lng}`)
         .join("<br/>");
     }
 
-    layer.bindPopup(`<b>Koordinat</b><br/>${latlngText}`).openPopup();
+    layer.bindPopup(`<b>Koordinat</b><br/>${coords}`).openPopup();
   };
 
   return (
@@ -170,7 +140,7 @@ const MapComponent: React.FC<MapProps> = ({
       center={center}
       zoom={zoom}
       scrollWheelZoom={scrollWheelZoom}
-      style={{ height: "100vh", width: "100%" }}
+      style={{ height: "100%" }}
     >
       <TileLayer
         url={
@@ -180,77 +150,104 @@ const MapComponent: React.FC<MapProps> = ({
         }
       />
 
-      {/* Layers Control */}
-      <LayersControl position="topleft">
-        {/* Overlay LB */}
-        <LayersControl.Overlay
-          name="RDTR LABUHAN DELI - PERCUT SEI TUAN TAHUN  2025-2045"
-          checked={geojsonTypes.includes("lb")}
-        >
-          <GeoJSON
-            data={layerMap.lb}
-            style={getFeatureStyle}
-            onEachFeature={onEachFeature}
-          />
-        </LayersControl.Overlay>
+      {/* Single Group Control */}
+      <GroupControl
+        groups={[
+          {
+            title: "Pola Ruang",
+            layers: [
+              {
+                key: "lb",
+                label: "Kecamatan Labuhan Deli - Percut Sei Tuan",
+                checked: selectedLayers.includes("lb"),
+              },
+              {
+                key: "bt",
+                label: "Kecamatan Batang Kuis",
+                checked: selectedLayers.includes("bt"),
+              },
+              {
+                key: "br",
+                label: "Kecamatan Pantai Labu – Beringin",
+                checked: selectedLayers.includes("br"),
+              },
+              {
+                key: "pt",
+                label: "Kecamatan Patumbak",
+                checked: selectedLayers.includes("pt"),
+              },
+            ],
+          },
+          {
+            title: "Data Tematik",
+            layers: [
+              {
+                key: "rb",
+                label: "Rawan Bencana",
+                checked: selectedLayers.includes("rb"),
+              },
+              {
+                key: "lsd",
+                label: "LSD & LBS",
+                checked: selectedLayers.includes("lsd"),
+              },
+              {
+                key: "ch",
+                label: "Curah Hujan",
+                checked: selectedLayers.includes("ch"),
+              },
+              {
+                key: "gg",
+                label: "Geologi",
+                checked: selectedLayers.includes("gg"),
+              },
+            ],
+          },
+        ]}
+        onToggle={toggleLayer}
+      />
 
-        {/* Overlay BT */}
-        <LayersControl.Overlay
-          name="RDTR BATANG KUIS TAHUN 2023-2043"
-          checked={geojsonTypes.includes("bt")}
-        >
-          <GeoJSON
-            data={layerMap.bt}
-            style={getFeatureStyle}
-            onEachFeature={onEachFeature}
-          />
-        </LayersControl.Overlay>
+      {/* Render GeoJSON directly */}
+      {selectedLayers.includes("lb") && (
+        <GeoJSON
+          data={layerMap.lb}
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
+      {selectedLayers.includes("bt") && (
+        <GeoJSON
+          data={layerMap.bt}
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
+      {selectedLayers.includes("br") && (
+        <GeoJSON
+          data={layerMap.br}
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
+      {selectedLayers.includes("pt") && (
+        <GeoJSON
+          data={layerMap.pt}
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
 
-        {/* Overlay BR */}
-        <LayersControl.Overlay
-          name="RDTR PANTAI LABU - BERINGIN TAHUN 2023-2043"
-          checked={geojsonTypes.includes("br")}
-        >
-          <GeoJSON
-            data={layerMap.br}
-            style={getFeatureStyle}
-            onEachFeature={onEachFeature}
-          />
-        </LayersControl.Overlay>
-
-        {/* Overlay PT */}
-        <LayersControl.Overlay
-          name="RDTR PATUMBAK 2023-2043"
-          checked={geojsonTypes.includes("pt")}
-        >
-          <GeoJSON
-            data={layerMap.pt}
-            style={getFeatureStyle}
-            onEachFeature={onEachFeature}
-          />
-        </LayersControl.Overlay>
-      </LayersControl>
-
+      {/* Drawing tools */}
       <FeatureGroup>
         <EditControl
           position="topleft"
           onCreated={onCreated}
           draw={{
-            polyline: {
-              icon: new L.DivIcon({
-                iconSize: new L.Point(8, 8),
-                className: "leaflet-div-icon leaflet-editing-icon",
-              }),
-              shapeOptions: {
-                guidelineDistance: 10,
-                color: "navy",
-                weight: 3,
-              },
-            },
             rectangle: true,
-            circlemarker: false,
-            circle: true,
             polygon: true,
+            circle: true,
+            circlemarker: false,
+            polyline: true,
             marker: {
               icon: new L.Icon({
                 iconRetinaUrl:
@@ -259,8 +256,6 @@ const MapComponent: React.FC<MapProps> = ({
                   "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
                 shadowUrl:
                   "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
               }),
             },
           }}

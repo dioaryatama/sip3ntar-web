@@ -49,9 +49,9 @@ const ClientMapWrapper: React.FC<ClientMapWrapperProps> = ({
   const isLayerVisible = (layer: LayerType) => visibleLayers.includes(layer);
 
   return (
-    <div className="relative w-full h-full">
+    <div className=" w-full h-full">
       {/* KOMPOSISI MAP */}
-      <div className="w-full h-screen">
+      <div className="w-full h-full">
         <DynamicMap
           center={center}
           zoom={zoom}
