@@ -287,9 +287,8 @@ const MapComponent: React.FC<MapProps> = ({
         {inputMarker && (
           <Marker position={inputMarker} icon={defaultMarkerIcon}>
             <Popup>
-              Marker dari Input <br />
-              Lat: {inputMarker[0]} <br />
-              Lng: {inputMarker[1]}
+              Latitude: {inputMarker[0]} <br />
+              Longtitude: {inputMarker[1]}
             </Popup>
           </Marker>
         )}
