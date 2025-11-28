@@ -1,4 +1,4 @@
-import navbarLogo from "@/app/assets/images/Navbar_logo.png";
+import navbarLogo from "@/app/assets/images/LOGO_NAVBAR.png";
 import Link from "next/link";
 
 const Navbar = () => {
@@ -10,7 +10,7 @@ const Navbar = () => {
             <img
               src={navbarLogo.src}
               alt="Logo Dinas Cipta Karya dan Tata Ruang Kabupaten Deli Serdang"
-              className="h-16 w-auto object-contain drop-shadow-2xl"
+              className="h-12 w-auto object-contain drop-shadow-2xl"
             />
           </Link>
         </div>

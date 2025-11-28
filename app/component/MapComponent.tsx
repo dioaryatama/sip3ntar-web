@@ -1,10 +1,18 @@
 "use client";
 
-import { MapContainer, TileLayer, GeoJSON, FeatureGroup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  FeatureGroup,
+  Marker,
+  Popup,
+} from "react-leaflet";
+import { useState } from "react";
 import { EditControl } from "react-leaflet-draw";
+import L from "leaflet";
 import type { FeatureCollection } from "geojson";
+import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 
 import btJson from "@/public/RENCANA_POLA_RUANG_BATANGKUIS_AR.json";
@@ -13,8 +21,8 @@ import brJson from "@/public/RENCANA_POLA_RUANG_PANTAILABUBERINGIN_AR.json";
 import ptJson from "@/public/RENCANA_POLA_RUANG_PATUMBAK_AR.json";
 
 import { style } from "./style";
-import { useState } from "react";
 import GroupControl from "./GroupControl";
+import LatLngMarkerForm from "./LatLngMarkerForm";
 
 // JSON to type-safe
 const bt = btJson as FeatureCollection;
@@ -62,6 +70,19 @@ const MapComponent: React.FC<MapProps> = ({
   geojsonTypes,
 }) => {
   const [selectedLayers, setSelectedLayers] = useState<string[]>(geojsonTypes);
+
+  const [inputMarker, setInputMarker] = useState<[number, number] | null>(null);
+
+  const handleInputMarker = (lat: number, lng: number) => {
+    setInputMarker([lat, lng]);
+  };
+
+  const defaultMarkerIcon = new L.Icon({
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
 
   const toggleLayer = (key: string) => {
     setSelectedLayers((prev) =>
@@ -136,132 +157,144 @@ const MapComponent: React.FC<MapProps> = ({
   };
 
   return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      scrollWheelZoom={scrollWheelZoom}
-      style={{ height: "100%" }}
-    >
-      <TileLayer
-        url={
-          viewType === "satellite"
-            ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        }
-      />
+    <>
+      <LatLngMarkerForm onSubmit={handleInputMarker} />
+      <MapContainer
+        center={center}
+        zoom={zoom}
+        scrollWheelZoom={scrollWheelZoom}
+        style={{ height: "100%" }}
+      >
+        <TileLayer
+          url={
+            viewType === "satellite"
+              ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          }
+        />
 
-      {/* Single Group Control */}
-      <GroupControl
-        groups={[
-          {
-            title: "Pola Ruang",
-            layers: [
-              {
-                key: "lb",
-                label: "Kecamatan Labuhan Deli - Percut Sei Tuan",
-                checked: selectedLayers.includes("lb"),
-              },
-              {
-                key: "bt",
-                label: "Kecamatan Batang Kuis",
-                checked: selectedLayers.includes("bt"),
-              },
-              {
-                key: "br",
-                label: "Kecamatan Pantai Labu – Beringin",
-                checked: selectedLayers.includes("br"),
-              },
-              {
-                key: "pt",
-                label: "Kecamatan Patumbak",
-                checked: selectedLayers.includes("pt"),
-              },
-            ],
-          },
-          {
-            title: "Data Tematik",
-            layers: [
-              {
-                key: "rb",
-                label: "Rawan Bencana",
-                checked: selectedLayers.includes("rb"),
-              },
-              {
-                key: "lsd",
-                label: "LSD & LBS",
-                checked: selectedLayers.includes("lsd"),
-              },
-              {
-                key: "ch",
-                label: "Curah Hujan",
-                checked: selectedLayers.includes("ch"),
-              },
-              {
-                key: "gg",
-                label: "Geologi",
-                checked: selectedLayers.includes("gg"),
-              },
-            ],
-          },
-        ]}
-        onToggle={toggleLayer}
-      />
-
-      {/* Render GeoJSON directly */}
-      {selectedLayers.includes("lb") && (
-        <GeoJSON
-          data={layerMap.lb}
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
-        />
-      )}
-      {selectedLayers.includes("bt") && (
-        <GeoJSON
-          data={layerMap.bt}
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
-        />
-      )}
-      {selectedLayers.includes("br") && (
-        <GeoJSON
-          data={layerMap.br}
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
-        />
-      )}
-      {selectedLayers.includes("pt") && (
-        <GeoJSON
-          data={layerMap.pt}
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
-        />
-      )}
-
-      {/* Drawing tools */}
-      <FeatureGroup>
-        <EditControl
-          position="topleft"
-          onCreated={onCreated}
-          draw={{
-            rectangle: true,
-            polygon: true,
-            circle: true,
-            circlemarker: false,
-            polyline: true,
-            marker: {
-              icon: new L.Icon({
-                iconRetinaUrl:
-                  "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-                iconUrl:
-                  "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-                shadowUrl:
-                  "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-              }),
+        {/* Single Group Control */}
+        <GroupControl
+          groups={[
+            {
+              title: "Pola Ruang",
+              layers: [
+                {
+                  key: "lb",
+                  label: "Kecamatan Labuhan Deli - Percut Sei Tuan",
+                  checked: selectedLayers.includes("lb"),
+                },
+                {
+                  key: "bt",
+                  label: "Kecamatan Batang Kuis",
+                  checked: selectedLayers.includes("bt"),
+                },
+                {
+                  key: "br",
+                  label: "Kecamatan Pantai Labu – Beringin",
+                  checked: selectedLayers.includes("br"),
+                },
+                {
+                  key: "pt",
+                  label: "Kecamatan Patumbak",
+                  checked: selectedLayers.includes("pt"),
+                },
+              ],
             },
-          }}
+            {
+              title: "Data Tematik",
+              layers: [
+                {
+                  key: "rb",
+                  label: "Rawan Bencana (Segera Hadir)",
+                  checked: selectedLayers.includes("rb"),
+                },
+                {
+                  key: "lsd",
+                  label: "LSD & LBS (Segera Hadir)",
+                  checked: selectedLayers.includes("lsd"),
+                },
+                {
+                  key: "ch",
+                  label: "Curah Hujan (Segera Hadir)",
+                  checked: selectedLayers.includes("ch"),
+                },
+                {
+                  key: "gg",
+                  label: "Geologi (Segera Hadir)",
+                  checked: selectedLayers.includes("gg"),
+                },
+              ],
+            },
+          ]}
+          onToggle={toggleLayer}
         />
-      </FeatureGroup>
-    </MapContainer>
+
+        {/* Render GeoJSON directly */}
+        {selectedLayers.includes("lb") && (
+          <GeoJSON
+            data={layerMap.lb}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
+        )}
+        {selectedLayers.includes("bt") && (
+          <GeoJSON
+            data={layerMap.bt}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
+        )}
+        {selectedLayers.includes("br") && (
+          <GeoJSON
+            data={layerMap.br}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
+        )}
+        {selectedLayers.includes("pt") && (
+          <GeoJSON
+            data={layerMap.pt}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
+        )}
+
+        {/* Drawing tools */}
+        <FeatureGroup>
+          <EditControl
+            position="topleft"
+            onCreated={onCreated}
+            draw={{
+              rectangle: true,
+              polygon: true,
+              circle: true,
+              circlemarker: false,
+              polyline: true,
+              marker: {
+                icon: new L.Icon({
+                  iconRetinaUrl:
+                    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+                  iconUrl:
+                    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+                  shadowUrl:
+                    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+                }),
+              },
+            }}
+          />
+        </FeatureGroup>
+        {inputMarker && (
+          <Marker position={inputMarker} icon={defaultMarkerIcon}>
+            <Popup>
+              Marker dari Input <br />
+              Lat: {inputMarker[0]} <br />
+              Lng: {inputMarker[1]}
+            </Popup>
+          </Marker>
+        )}
+      </MapContainer>
+    </>
   );
 };
 

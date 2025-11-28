@@ -137,7 +137,7 @@ export function MainHero() {
               <img
                 src={sipNyarLogo.src}
                 alt="SIP NYAR Logo"
-                className="h-32 md:h-40 w-auto object-contain drop-shadow-2xl"
+                className="h-72 md:h-80 w-auto object-contain drop-shadow-2xl"
               />
             </motion.div>
             <motion.p
