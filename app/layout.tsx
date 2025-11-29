@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Dinas Tata Ruang - Perencanaan Kota Berkelanjutan",
+  title: "Dinas Cipta Karya dan Tata Ruang Kab. Deli Serdang",
   description:
     "Layanan perencanaan tata ruang profesional untuk pembangunan kota yang terencana dan berkelanjutan",
   generator: "v0.app",

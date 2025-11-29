@@ -82,6 +82,9 @@ const MapComponent: React.FC<MapProps> = ({
       "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41], // ukuran icon
+    iconAnchor: [12, 41], // titik dasar icon tepat di koordinat
+    popupAnchor: [0, -41], // popup muncul di atas kepala marker
   });
 
   const toggleLayer = (key: string) => {
@@ -279,6 +282,9 @@ const MapComponent: React.FC<MapProps> = ({
                     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
                   shadowUrl:
                     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  popupAnchor: [0, -41],
                 }),
               },
             }}
