@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description:
     "Layanan perencanaan tata ruang profesional untuk pembangunan kota yang terencana dan berkelanjutan",
   generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico", // ✔ path public
+  },
 };
 
 export default function RootLayout({
