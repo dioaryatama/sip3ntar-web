@@ -119,12 +119,35 @@ const MapComponent: React.FC<MapProps> = ({
     line.setAttribute("stroke-width", "3");
     pattern.appendChild(line);
 
+    const greenPattern = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "pattern"
+    );
+    greenPattern.setAttribute("id", "testPattern");
+    greenPattern.setAttribute("patternUnits", "userSpaceOnUse");
+    greenPattern.setAttribute("width", "12");
+    greenPattern.setAttribute("height", "12");
+
+    // Titik
+    const circle = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "circle"
+    );
+    circle.setAttribute("cx", "4");
+    circle.setAttribute("cy", "4");
+    circle.setAttribute("r", "2");
+    circle.setAttribute("fill", "#000");
+
+    greenPattern.appendChild(circle);
+    defs.appendChild(greenPattern);
+
     defs.appendChild(pattern);
     svg.appendChild(defs);
     document.body.appendChild(svg);
 
     const stripePattern = {
       transportasi: "url(#transportasiPattern)",
+      test: "url(#testPattern)",
     };
 
     setPatterns(stripePattern);
@@ -146,10 +169,8 @@ const MapComponent: React.FC<MapProps> = ({
     const featureName =
       feature?.properties?.NAMOBJ || String(feature?.id) || "default";
 
-    // Cek apakah nama object adalah "kawasan transportasi"
     const isKawasanTransportasi = featureName.toLowerCase().includes("/");
 
-    // Cek apakah nama object adalah "test"
     const isTest = featureName.toLowerCase().includes("kawasan transportasi");
 
     if (isKawasanTransportasi) {
@@ -164,8 +185,8 @@ const MapComponent: React.FC<MapProps> = ({
     if (isTest) {
       return {
         weight: 1,
-        color: "#00aa00",
-        fillColor: patterns.test || "#00aa00",
+        color: "#000",
+        fillColor: patterns.test || "#000",
         fillOpacity: 1,
       };
     }
@@ -252,27 +273,17 @@ const MapComponent: React.FC<MapProps> = ({
         <GroupControl
           groups={[
             {
-              title: "Pola Ruang",
+              title: "RTRW",
               layers: [
                 {
-                  key: "lb",
-                  label: "Kecamatan Labuhan Deli - Percut Sei Tuan",
-                  checked: selectedLayers.includes("lb"),
-                },
-                {
                   key: "bt",
-                  label: "Kecamatan Batang Kuis",
+                  label: "Pola Ruang",
                   checked: selectedLayers.includes("bt"),
                 },
                 {
                   key: "br",
-                  label: "Kecamatan Pantai Labu – Beringin",
+                  label: "Struktur Ruang (Segera Hadir)",
                   checked: selectedLayers.includes("br"),
-                },
-                {
-                  key: "pt",
-                  label: "Kecamatan Patumbak",
-                  checked: selectedLayers.includes("pt"),
                 },
               ],
             },
