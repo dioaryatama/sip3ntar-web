@@ -1,6 +1,13 @@
 "use client";
 
-import { FileText, Building2, ScrollText, X } from "lucide-react";
+import {
+  FileText,
+  Building2,
+  Satellite,
+  ScrollText,
+  X,
+  Map,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import welcomeImage from "@/app/assets/images/Banner_Popup.png";
@@ -12,14 +19,14 @@ import Link from "next/link";
 
 const menuItems = [
   {
-    icon: Building2,
+    icon: Satellite,
     title: "Informasi RTRW",
     gradient: "from-blue-700 to-cyan-700",
     bgGlow: "bg-blue-700/20",
     href: "/rtrw",
   },
   {
-    icon: FileText,
+    icon: Map,
     title: "Informasi RDTR",
     gradient: "from-purple-700 to-pink-700",
     bgGlow: "bg-purple-700/20",
@@ -31,18 +38,20 @@ const menuItems = [
   //     gradient: "from-emerald-700 to-teal-700",
   //     bgGlow: "bg-emerald-700/20",
   //   },
-  //   {
-  //     icon: Map,
-  //     title: "Peta Tematik",
-  //     gradient: "from-amber-700 to-orange-700",
-  //     bgGlow: "bg-amber-700/20",
-  //   },
+
   {
     icon: ScrollText,
     title: "Informasi Peraturan Lainnya",
     gradient: "from-indigo-700 to-blue-700",
     bgGlow: "bg-indigo-700/20",
     href: "/informasi-peraturan",
+  },
+  {
+    icon: FileText,
+    title: "Buat Laporan",
+    gradient: "from-amber-700 to-orange-700",
+    bgGlow: "bg-amber-700/20",
+    href: "https://lapor.go.id/",
   },
 ];
 
@@ -151,7 +160,7 @@ export function MainHero() {
             </motion.p>
           </motion.div>
           {/* Modern Menu Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mb-12 px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12 px-4">
             {menuItems.map((item, index) => {
               const Icon = item.icon;
               return (
@@ -167,7 +176,17 @@ export function MainHero() {
                   whileHover={{ scale: 1.05, y: -5 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Link href={item.href}>
+                  <Link
+                    href={item.href}
+                    target={
+                      item.title === "Buat Laporan" ? "_blank" : undefined
+                    }
+                    rel={
+                      item.title === "Buat Laporan"
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
+                  >
                     {/* Glow effect on hover */}
                     <div
                       className={`absolute inset-0 ${item.bgGlow} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
