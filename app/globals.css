@@ -123,6 +123,28 @@
   }
 }
 
+@layer components {
+  .label-kecamatan {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 10px;
+    font-weight: 800;
+    color: #000; /* Warna teks hitam */
+    text-transform: uppercase;
+    text-align: center;
+    white-space: pre-wrap;
+    /* Efek Halo Putih Tebal */
+    text-shadow: 
+      -1px -1px 0 #fff,  
+       1px -1px 0 #fff,
+      -1px  1px 0 #fff,
+       1px  1px 0 #fff,
+       2px 0 0 #fff,
+      -2px 0 0 #fff;
+  }
+}
+
 /* File: styles/globals.css atau tailwind.css */
 /* .leaflet-control-layers {
   background: rgba(255, 255, 255, 0.95);
