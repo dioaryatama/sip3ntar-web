@@ -12,6 +12,9 @@ RUN npm ci
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# TAMBAHAN: Set Node memory limit untuk build
+ENV NODE_OPTIONS="--max-old-space-size=1536"
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
