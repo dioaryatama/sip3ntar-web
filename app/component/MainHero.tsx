@@ -8,19 +8,19 @@ import {
   X,
   Map,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import welcomeImage from "@/app/assets/images/Banner_Popup.png";
 import backgroundImage from "@/app/assets/images/BG_SIPENTAR.png";
 import dinasLogo from "@/app/assets/images/LOGO_PEMKAB.png";
 import sipNyarLogo from "@/app/assets/images/LOGO_SIPENTAR.png";
 import Link from "next/link";
-// import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 const menuItems = [
   {
     icon: Satellite,
     title: "Informasi RTRW",
+    subtitle: "(Rencana Tata Ruang Wilayah)", // Ditambahkan
     gradient: "from-blue-700 to-cyan-700",
     bgGlow: "bg-blue-700/20",
     href: "/rtrw",
@@ -28,20 +28,15 @@ const menuItems = [
   {
     icon: Map,
     title: "Informasi RDTR",
+    subtitle: "(Rencana Detail Tata Ruang)", // Ditambahkan
     gradient: "from-purple-700 to-pink-700",
     bgGlow: "bg-purple-700/20",
     href: "/rdtr",
   },
-  //   {
-  //     icon: Satellite,
-  //     title: "Peta Satelit",
-  //     gradient: "from-emerald-700 to-teal-700",
-  //     bgGlow: "bg-emerald-700/20",
-  //   },
-
   {
     icon: ScrollText,
     title: "Informasi Peraturan Lainnya",
+    subtitle: "", // Kosongkan jika tidak ada
     gradient: "from-indigo-700 to-blue-700",
     bgGlow: "bg-indigo-700/20",
     href: "/informasi-peraturan",
@@ -49,6 +44,7 @@ const menuItems = [
   {
     icon: FileText,
     title: "Buat Laporan",
+    subtitle: "", // Kosongkan jika tidak ada
     gradient: "from-amber-700 to-orange-700",
     bgGlow: "bg-amber-700/20",
     href: "https://lapor.go.id/",
@@ -82,9 +78,7 @@ export function MainHero() {
               className="relative inline-block"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Image container with max height */}
               <div className="relative max-h-[75vh] rounded-2xl overflow-hidden shadow-2xl">
-                {/* Close button */}
                 <button
                   onClick={handleClosePopup}
                   className="absolute top-3 right-3 z-10 bg-white rounded-full p-1.5 shadow-lg hover:bg-red-500 hover:text-white transition-all duration-300 group"
@@ -104,7 +98,7 @@ export function MainHero() {
       </AnimatePresence>
 
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-400 via-teal-300 to-green-300">
-        {/* Background Image - Full Screen */}
+        {/* Background Image */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <img
             src={backgroundImage.src}
@@ -129,14 +123,13 @@ export function MainHero() {
 
         {/* Main Content */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12">
-          {/* Modern Title */}
+          {/* Title Section */}
           <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Logo SIP NYAR */}
             <motion.div
               className="flex items-center justify-center mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -159,7 +152,8 @@ export function MainHero() {
               Interaktif
             </motion.p>
           </motion.div>
-          {/* Modern Menu Cards */}
+
+          {/* Menu Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12 px-4">
             {menuItems.map((item, index) => {
               const Icon = item.icon;
@@ -187,27 +181,33 @@ export function MainHero() {
                         : undefined
                     }
                   >
-                    {/* Glow effect on hover */}
                     <div
                       className={`absolute inset-0 ${item.bgGlow} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
                     ></div>
 
-                    <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/50 transition-all duration-300">
+                    <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/50 transition-all duration-300 h-full flex flex-col items-center justify-center">
                       <div className="flex flex-col items-center gap-4">
-                        {/* Icon with gradient background */}
                         <div
                           className={`bg-gradient-to-br ${item.gradient} p-4 rounded-xl shadow-lg group-hover:shadow-2xl transition-shadow duration-300`}
                         >
                           <Icon className="w-10 h-10 text-white" />
                         </div>
 
-                        {/* Text */}
-                        <span className="text-sm text-gray-800 text-center group-hover:text-gray-900 transition-colors">
-                          {item.title}
-                        </span>
+                        {/* Text Container */}
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-sm font-bold text-gray-800 text-center group-hover:text-gray-900 transition-colors">
+                            {item.title}
+                          </span>
+                          
+                          {/* Subtitle Render Logic */}
+                          {item.subtitle && (
+                            <span className="text-[11px] font-medium text-gray-500 text-center leading-tight group-hover:text-gray-700">
+                              {item.subtitle}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Shine effect */}
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                   </Link>
@@ -217,7 +217,7 @@ export function MainHero() {
           </div>
         </div>
 
-        {/* Modern Footer */}
+        {/* Footer */}
         <motion.div
           className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900/95 via-slate-900/95 to-gray-900/95 backdrop-blur-md text-white py-4 z-20 border-t border-white/10"
           initial={{ opacity: 0, y: 20 }}
@@ -226,7 +226,7 @@ export function MainHero() {
         >
           <div className="container mx-auto px-4">
             <p className="text-xs sm:text-sm text-center text-gray-300">
-              © 2025 Dinas Cipta Karya dan Tata Ruang Kabupaten Deli Serdang
+              © 2025 Dinas Cipta Karya dan Tata Ruang Kabupaten Deli Serdang
             </p>
           </div>
         </motion.div>
