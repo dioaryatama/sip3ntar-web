@@ -135,14 +135,22 @@
     text-align: center;
     white-space: pre-wrap;
     /* Efek Halo Putih Tebal */
-    text-shadow: 
-      -1px -1px 0 #fff,  
-       1px -1px 0 #fff,
-      -1px  1px 0 #fff,
-       1px  1px 0 #fff,
-       2px 0 0 #fff,
-      -2px 0 0 #fff;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff,
+      1px 1px 0 #fff, 2px 0 0 #fff, -2px 0 0 #fff;
   }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
 }
 
 /* File: styles/globals.css atau tailwind.css */

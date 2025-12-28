@@ -68,12 +68,22 @@ const stringToColor = (str: string): string => {
 };
 
 // --- HELPER: GENERATE POPUP CONTENT (Supaya bisa dipakai di Click & Input) ---
-const generatePopupContent = (properties: any, lat: string | number, lng: string | number) => {
+const generatePopupContent = (
+  properties: any,
+  lat: string | number,
+  lng: string | number
+) => {
   const p = properties;
-  
+
   // Logika LP2B
   let infoLp2b = "";
-  if (p.LP2B_2 && p.LP2B_2 !== "Tidak Ada" && p.LP2B_2 !== "" && p.LP2B_2 !== null) {
+  if (
+    p.LP2B_2 &&
+    p.NAMOBJ === "Tanaman Pangan" &&
+    p.LP2B_2 !== "Tidak Ada" &&
+    p.LP2B_2 !== "" &&
+    p.LP2B_2 !== null
+  ) {
     infoLp2b = `
       <tr>
         <td style="padding-top: 5px; padding-bottom: 5px;">
@@ -86,9 +96,13 @@ const generatePopupContent = (properties: any, lat: string | number, lng: string
   }
 
   const rows = `
-      <tr><td style="font-weight:800; font-size: 1.1em;">${p.NAMOBJ ?? "-"}</td></tr>
+      <tr><td style="font-weight:800; font-size: 1.1em;">${
+        p.NAMOBJ ?? "-"
+      }</td></tr>
       ${infoLp2b}
-      <tr><td style="border-top: 1px solid #eee; padding-top: 5px;">${p.WADMPR ?? "-"}</td></tr>
+      <tr><td style="border-top: 1px solid #eee; padding-top: 5px;">${
+        p.WADMPR ?? "-"
+      }</td></tr>
       <tr><td>${p.WADMKK ?? "-"}</td></tr>
       <tr><td>${p.WADMKC ?? "-"}</td></tr>
       <tr><td style="font-size: 0.85em; color: #666; padding-top: 8px;">Lat: ${lat}, Long: ${lng}</td></tr>
@@ -135,34 +149,40 @@ const MapComponent: React.FC<MapProps> = ({
 
     // Loop semua layer yang aktif
     for (const layerKey of selectedLayers) {
-        const featureCollection = layerMap[layerKey as LayerType];
-        if (!featureCollection) continue;
+      const featureCollection = layerMap[layerKey as LayerType];
+      if (!featureCollection) continue;
 
-        // Loop semua feature dalam layer
-        for (const feature of featureCollection.features) {
-            if (feature.geometry) {
-                // Cek apakah titik ada di dalam polygon ini
-                // Perlu casting tipe geometry agar turf menerimanya
-                try {
-                   if (booleanPointInPolygon(turfPoint, feature.geometry as any)) {
-                       foundFeature = feature;
-                       break; // Ketemu! Stop loop feature
-                   }
-                } catch (err) {
-                   // Ignore error jika geometry invalid
-                }
+      // Loop semua feature dalam layer
+      for (const feature of featureCollection.features) {
+        if (feature.geometry) {
+          // Cek apakah titik ada di dalam polygon ini
+          // Perlu casting tipe geometry agar turf menerimanya
+          try {
+            if (booleanPointInPolygon(turfPoint, feature.geometry as any)) {
+              foundFeature = feature;
+              break; // Ketemu! Stop loop feature
             }
+          } catch (err) {
+            // Ignore error jika geometry invalid
+          }
         }
-        if (foundFeature) break; // Ketemu! Stop loop layer
+      }
+      if (foundFeature) break; // Ketemu! Stop loop layer
     }
 
     if (foundFeature) {
-        // Jika ketemu, generate popup lengkap
-        const htmlContent = generatePopupContent(foundFeature.properties, lat, lng);
-        setMarkerPopupHtml(htmlContent);
+      // Jika ketemu, generate popup lengkap
+      const htmlContent = generatePopupContent(
+        foundFeature.properties,
+        lat,
+        lng
+      );
+      setMarkerPopupHtml(htmlContent);
     } else {
-        // Jika tidak ketemu (misal di laut/luar wilayah), tampilkan koordinat saja
-        setMarkerPopupHtml(`<b>Lokasi Diluar Pola Ruang</b><br/>Lat: ${lat}<br/>Lng: ${lng}`);
+      // Jika tidak ketemu (misal di laut/luar wilayah), tampilkan koordinat saja
+      setMarkerPopupHtml(
+        `<b>Lokasi Diluar Pola Ruang</b><br/>Lat: ${lat}<br/>Lng: ${lng}`
+      );
     }
   };
 
@@ -234,7 +254,7 @@ const MapComponent: React.FC<MapProps> = ({
   return (
     <>
       <LatLngMarkerForm onSubmit={handleInputMarker} />
-      
+
       <MapContainer
         center={center}
         zoom={zoom}
@@ -256,19 +276,51 @@ const MapComponent: React.FC<MapProps> = ({
             {
               title: "Pola Ruang",
               layers: [
-                { key: "lb", label: "Kecamatan Labuhan Deli - Percut Sei Tuan", checked: selectedLayers.includes("lb") },
-                { key: "bt", label: "Kecamatan Batang Kuis", checked: selectedLayers.includes("bt") },
-                { key: "br", label: "Kecamatan Pantai Labu – Beringin", checked: selectedLayers.includes("br") },
-                { key: "pt", label: "Kecamatan Patumbak", checked: selectedLayers.includes("pt") },
+                {
+                  key: "lb",
+                  label: "Kecamatan Labuhan Deli - Percut Sei Tuan",
+                  checked: selectedLayers.includes("lb"),
+                },
+                {
+                  key: "bt",
+                  label: "Kecamatan Batang Kuis",
+                  checked: selectedLayers.includes("bt"),
+                },
+                {
+                  key: "br",
+                  label: "Kecamatan Pantai Labu – Beringin",
+                  checked: selectedLayers.includes("br"),
+                },
+                {
+                  key: "pt",
+                  label: "Kecamatan Patumbak",
+                  checked: selectedLayers.includes("pt"),
+                },
               ],
             },
             {
               title: "Data Tematik",
               layers: [
-                { key: "rb", label: "Rawan Bencana (Segera Hadir)", checked: selectedLayers.includes("rb") },
-                { key: "lsd", label: "LSD & LBS (Segera Hadir)", checked: selectedLayers.includes("lsd") },
-                { key: "ch", label: "Curah Hujan (Segera Hadir)", checked: selectedLayers.includes("ch") },
-                { key: "gg", label: "Geologi (Segera Hadir)", checked: selectedLayers.includes("gg") },
+                {
+                  key: "rb",
+                  label: "Rawan Bencana (Segera Hadir)",
+                  checked: selectedLayers.includes("rb"),
+                },
+                {
+                  key: "lsd",
+                  label: "LSD & LBS (Segera Hadir)",
+                  checked: selectedLayers.includes("lsd"),
+                },
+                {
+                  key: "ch",
+                  label: "Curah Hujan (Segera Hadir)",
+                  checked: selectedLayers.includes("ch"),
+                },
+                {
+                  key: "gg",
+                  label: "Geologi (Segera Hadir)",
+                  checked: selectedLayers.includes("gg"),
+                },
               ],
             },
           ]}
@@ -276,16 +328,32 @@ const MapComponent: React.FC<MapProps> = ({
         />
 
         {selectedLayers.includes("lb") && layerMap.lb && (
-          <GeoJSON data={layerMap.lb} style={getFeatureStyle} onEachFeature={onEachFeature} />
+          <GeoJSON
+            data={layerMap.lb}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
         )}
         {selectedLayers.includes("bt") && layerMap.bt && (
-          <GeoJSON data={layerMap.bt} style={getFeatureStyle} onEachFeature={onEachFeature} />
+          <GeoJSON
+            data={layerMap.bt}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
         )}
         {selectedLayers.includes("br") && layerMap.br && (
-          <GeoJSON data={layerMap.br} style={getFeatureStyle} onEachFeature={onEachFeature} />
+          <GeoJSON
+            data={layerMap.br}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
         )}
         {selectedLayers.includes("pt") && layerMap.pt && (
-          <GeoJSON data={layerMap.pt} style={getFeatureStyle} onEachFeature={onEachFeature} />
+          <GeoJSON
+            data={layerMap.pt}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
         )}
 
         <FeatureGroup>
@@ -293,8 +361,11 @@ const MapComponent: React.FC<MapProps> = ({
             position="topleft"
             onCreated={onCreated}
             draw={{
-              rectangle: true, polygon: true, circle: true,
-              circlemarker: false, polyline: true,
+              rectangle: true,
+              polygon: true,
+              circle: true,
+              circlemarker: false,
+              polyline: true,
               marker: { icon: defaultMarkerIcon },
             }}
           />
@@ -303,9 +374,9 @@ const MapComponent: React.FC<MapProps> = ({
         {/* INPUT MARKER dengan POPUP DINAMIS */}
         {inputMarker && (
           <Marker position={inputMarker} icon={defaultMarkerIcon}>
-             {/* Gunakan dangerouslySetInnerHTML karena kita merender string HTML tabel */}
+            {/* Gunakan dangerouslySetInnerHTML karena kita merender string HTML tabel */}
             <Popup>
-                <div dangerouslySetInnerHTML={{ __html: markerPopupHtml }} />
+              <div dangerouslySetInnerHTML={{ __html: markerPopupHtml }} />
             </Popup>
           </Marker>
         )}
