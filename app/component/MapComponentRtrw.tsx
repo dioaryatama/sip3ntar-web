@@ -53,6 +53,17 @@ export interface MapProps {
   geojsonTypes: LayerType[];
 }
 
+// Komponen Pembantu untuk menggeser peta ke Marker Input
+function FlyToLocation({ coords }: { coords: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (coords) {
+      map.flyTo(coords, 16, { duration: 1.5 });
+    }
+  }, [coords, map]);
+  return null;
+}
+
 // --- DATA ATURAN ZONASI ---
 const getZoningRules = (zona: string): string => {
   if (zona === "Kawasan Permukiman Perkotaan") {
@@ -164,7 +175,7 @@ const MapEvents = ({
   activeLatLng,
   setWindowPosition,
   setActiveLatLng,
-  setRuleContent
+  setRuleContent,
 }: {
   activeLatLng: { lat: number; lng: number } | null;
   setWindowPosition: (pos: { x: number; y: number }) => void;
@@ -175,7 +186,10 @@ const MapEvents = ({
 
   const updatePosition = useCallback(() => {
     if (activeLatLng) {
-      const point = map.latLngToContainerPoint([activeLatLng.lat, activeLatLng.lng]);
+      const point = map.latLngToContainerPoint([
+        activeLatLng.lat,
+        activeLatLng.lng,
+      ]);
       setWindowPosition({ x: point.x + 20, y: point.y - 100 });
     }
   }, [map, activeLatLng, setWindowPosition]);
@@ -190,7 +204,7 @@ const MapEvents = ({
       const content = getZoningRules(namaZona);
       setActiveLatLng({ lat, lng });
       setRuleContent(content);
-      
+
       const point = map.latLngToContainerPoint([lat, lng]);
       setWindowPosition({ x: point.x + 20, y: point.y - 100 });
     };
@@ -216,15 +230,22 @@ const MapComponent: React.FC<MapProps> = ({
   const [patterns, setPatterns] = useState<{ [key: string]: string }>({});
 
   const [ruleContent, setRuleContent] = useState<string | null>(null);
-  const [activeLatLng, setActiveLatLng] = useState<{ lat: number; lng: number } | null>(null);
-  const [windowPosition, setWindowPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [activeLatLng, setActiveLatLng] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [windowPosition, setWindowPosition] = useState<{
+    x: number;
+    y: number;
+  }>({ x: 0, y: 0 });
 
   const handleInputMarker = (lat: number, lng: number) => {
     setInputMarker([lat, lng]);
   };
 
   const defaultMarkerIcon = new L.Icon({
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
     iconSize: [25, 41],
@@ -240,7 +261,10 @@ const MapComponent: React.FC<MapProps> = ({
 
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
 
-    const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    const pattern = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "pattern"
+    );
     pattern.setAttribute("id", "transportasiPattern");
     pattern.setAttribute("patternUnits", "userSpaceOnUse");
     pattern.setAttribute("width", "10");
@@ -256,13 +280,19 @@ const MapComponent: React.FC<MapProps> = ({
     line.setAttribute("stroke-width", "3");
     pattern.appendChild(line);
 
-    const greenPattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    const greenPattern = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "pattern"
+    );
     greenPattern.setAttribute("id", "testPattern");
     greenPattern.setAttribute("patternUnits", "userSpaceOnUse");
     greenPattern.setAttribute("width", "12");
     greenPattern.setAttribute("height", "12");
 
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const circle = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "circle"
+    );
     circle.setAttribute("cx", "4");
     circle.setAttribute("cy", "4");
     circle.setAttribute("r", "2");
@@ -280,7 +310,7 @@ const MapComponent: React.FC<MapProps> = ({
     });
 
     return () => {
-      if(document.body.contains(svg)) document.body.removeChild(svg);
+      if (document.body.contains(svg)) document.body.removeChild(svg);
     };
   }, []);
 
@@ -297,14 +327,15 @@ const MapComponent: React.FC<MapProps> = ({
     return {
       weight: 2,
       color: "#333",
-      dashArray: '10, 5',
+      dashArray: "10, 5",
       fillColor: "transparent",
-      fillOpacity: 0, 
+      fillOpacity: 0,
     };
   };
 
   const getFeatureStyle = (feature: any) => {
-    const featureName = feature?.properties?.NAMOBJ || String(feature?.id) || "default";
+    const featureName =
+      feature?.properties?.NAMOBJ || String(feature?.id) || "default";
     const isKawasanTransportasi = featureName.toLowerCase().includes("/");
     const isTest = featureName.toLowerCase().includes("kawasan transportasi");
 
@@ -327,7 +358,9 @@ const MapComponent: React.FC<MapProps> = ({
     const matchedStyle = styleRtrw.find((s) => s.name === featureName);
     return {
       weight: 0,
-      fillColor: matchedStyle ? matchedStyle.fillColor : stringToColor(featureName),
+      fillColor: matchedStyle
+        ? matchedStyle.fillColor
+        : stringToColor(featureName),
       fillOpacity: matchedStyle ? 0.8 : 0.4,
     };
   };
@@ -340,9 +373,13 @@ const MapComponent: React.FC<MapProps> = ({
       const namaObjek = p.NAMOBJ || "-";
 
       let tombolAturan = "";
-      
-      if (namaObjek.trim() === "Kawasan Permukiman Perkotaan" || namaObjek.trim() === "Kawasan Permukiman Perdesaan" || namaObjek.trim() === "Kawasan Tanaman Pangan") {
-         tombolAturan = `
+
+      if (
+        namaObjek.trim() === "Kawasan Permukiman Perkotaan" ||
+        namaObjek.trim() === "Kawasan Permukiman Perdesaan" ||
+        namaObjek.trim() === "Kawasan Tanaman Pangan"
+      ) {
+        tombolAturan = `
             <tr>
                 <td style="padding-top: 10px;">
                     <button 
@@ -405,15 +442,24 @@ const MapComponent: React.FC<MapProps> = ({
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
       <LatLngMarkerForm onSubmit={handleInputMarker} />
-      
+
       <MapContainer
         center={center}
         zoom={zoom}
         scrollWheelZoom={scrollWheelZoom}
         style={{ height: "100%", width: "100%" }}
       >
+        <FlyToLocation coords={inputMarker} />
+
         <TileLayer
           url={
             viewType === "satellite"
@@ -421,8 +467,8 @@ const MapComponent: React.FC<MapProps> = ({
               : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           }
         />
-        
-        <MapEvents 
+
+        <MapEvents
           activeLatLng={activeLatLng}
           setWindowPosition={setWindowPosition}
           setActiveLatLng={setActiveLatLng}
@@ -501,20 +547,23 @@ const MapComponent: React.FC<MapProps> = ({
             style={getKecamatanStyle}
             interactive={false} // <--- TAMBAHAN PENTING: Agar klik tembus ke bawah & cursor tidak berubah
             onEachFeature={(feature, layer) => {
-                // Ambil data dari atribut KECAMATAN
-                const labelText = feature.properties?.KECAMATAN || feature.properties?.NAMOBJ || "";
-                
-                // --- BAGIAN POPUP DIHAPUS ---
-                // layer.bindPopup(...) -> Hapus baris ini agar tidak ada aksi klik
-                
-                // Label Permanen (Tampil Terus) - Tetap ada
-                if (labelText) {
-                   layer.bindTooltip(labelText, {
-                      permanent: true, 
-                      direction: "center",
-                      className: "label-kecamatan"
-                   });
-                }
+              // Ambil data dari atribut KECAMATAN
+              const labelText =
+                feature.properties?.KECAMATAN ||
+                feature.properties?.NAMOBJ ||
+                "";
+
+              // --- BAGIAN POPUP DIHAPUS ---
+              // layer.bindPopup(...) -> Hapus baris ini agar tidak ada aksi klik
+
+              // Label Permanen (Tampil Terus) - Tetap ada
+              if (labelText) {
+                layer.bindTooltip(labelText, {
+                  permanent: true,
+                  direction: "center",
+                  className: "label-kecamatan",
+                });
+              }
             }}
           />
         )}
@@ -535,17 +584,23 @@ const MapComponent: React.FC<MapProps> = ({
             }}
           />
         </FeatureGroup>
-        
+
         {inputMarker && (
           <Marker position={inputMarker} icon={defaultMarkerIcon}>
             <Popup>
-              
               <div style={{ textAlign: "center", minWidth: "120px" }}>
-                <p style={{ margin: "0 0 8px 0", fontWeight: "bold", fontSize: "12px" }}>
+                <p
+                  style={{
+                    margin: "0 0 8px 0",
+                    fontWeight: "bold",
+                    fontSize: "12px",
+                  }}
+                >
                   📍 Lokasi Input
                 </p>
                 <p style={{ margin: "0 0 10px 0", fontSize: "11px" }}>
-                  Lat: {inputMarker[0]}<br />
+                  Lat: {inputMarker[0]}
+                  <br />
                   Lng: {inputMarker[1]}
                 </p>
                 <button
@@ -558,7 +613,7 @@ const MapComponent: React.FC<MapProps> = ({
                     borderRadius: "4px",
                     cursor: "pointer",
                     fontSize: "11px",
-                    fontWeight: "bold"
+                    fontWeight: "bold",
                   }}
                 >
                   🗑️ Hapus Marker
@@ -572,57 +627,68 @@ const MapComponent: React.FC<MapProps> = ({
       {/* STICKY WINDOW */}
       {activeLatLng && ruleContent && (
         <div
-            style={{
-                position: "absolute",
-                left: `${windowPosition.x}px`, 
-                top: `${windowPosition.y}px`,
-                width: "300px",
-                maxHeight: "350px",
-                backgroundColor: "white",
-                zIndex: 9999,
-                borderRadius: "8px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onDoubleClick={(e) => e.stopPropagation()}
-            onWheel={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            left: `${windowPosition.x}px`,
+            top: `${windowPosition.y}px`,
+            width: "300px",
+            maxHeight: "350px",
+            backgroundColor: "white",
+            zIndex: 9999,
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
         >
-            <div style={{
-                padding: "8px 12px",
-                backgroundColor: "#f8f9fa",
-                borderBottom: "1px solid #ddd",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-            }}>
-                <h3 style={{margin:0, fontSize:"13px", fontWeight:"bold", color:"#333"}}>Aturan Zonasi</h3>
-                <button 
-                    onClick={handleCloseRule}
-                    style={{
-                        background: "transparent",
-                        border: "none",
-                        fontSize: "16px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        color: "#999"
-                    }}
-                >
-                    ✕
-                </button>
-            </div>
+          <div
+            style={{
+              padding: "8px 12px",
+              backgroundColor: "#f8f9fa",
+              borderBottom: "1px solid #ddd",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "13px",
+                fontWeight: "bold",
+                color: "#333",
+              }}
+            >
+              Aturan Zonasi
+            </h3>
+            <button
+              onClick={handleCloseRule}
+              style={{
+                background: "transparent",
+                border: "none",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                color: "#999",
+              }}
+            >
+              ✕
+            </button>
+          </div>
 
-            <div 
-                style={{
-                    padding: "12px",
-                    overflowY: "auto",
-                    fontSize: "13px",
-                    color: "#333"
-                }}
-                dangerouslySetInnerHTML={{ __html: ruleContent }} 
-            />
+          <div
+            style={{
+              padding: "12px",
+              overflowY: "auto",
+              fontSize: "13px",
+              color: "#333",
+            }}
+            dangerouslySetInnerHTML={{ __html: ruleContent }}
+          />
         </div>
       )}
     </div>
