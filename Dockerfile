@@ -11,7 +11,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Set memory limit untuk build (optimized untuk RAM 2GB)
-ENV NODE_OPTIONS="--max-old-space-size=1024"
+ENV NODE_OPTIONS="--max-old-space-size=1792"
 ENV GENERATE_SOURCEMAP=false
 
 # Install semua dependencies (including dev)
