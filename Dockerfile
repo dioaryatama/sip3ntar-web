@@ -1,57 +1,54 @@
+# ======================
 # Stage 1: Dependencies
-FROM node:20-alpine AS deps
+# ======================
+FROM node:18-alpine AS deps
 WORKDIR /app
-
-# Copy package files
 COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-RUN npm ci
-
+# ======================
 # Stage 2: Builder
-FROM node:20-alpine AS builder
+# ======================
+FROM node:18-alpine AS builder
 WORKDIR /app
 
-# TAMBAHAN: Set Node memory limit untuk build
-ENV NODE_OPTIONS="--max-old-space-size=1536"
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+ENV BROWSERSLIST_IGNORE_OLD_DATA=true
+ENV NPM_CONFIG_LOGLEVEL=info
+ENV NEXT_DEBUG=true
+ENV DEBUG=next:*
 
-# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-
-# Copy source code
 COPY . .
 
-# Set environment to production
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+RUN sh -c ' \
+  echo "===== NEXT BUILD START ====="; \
+  ( while sleep 10; do echo "[BUILD] still running..."; done ) & \
+  npm run build; \
+  echo "===== NEXT BUILD END =====" \
+'
 
-# Build Next.js application
-RUN npm run build
-
+# ======================
 # Stage 3: Runner
-FROM node:20-alpine AS runner
+# ======================
+FROM node:18-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=8080
+ENV HOSTNAME=0.0.0.0
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
 
-# Copy necessary files from builder
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Set correct permissions
 RUN chown -R nextjs:nodejs /app
-
 USER nextjs
 
-EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
+EXPOSE 8080
 CMD ["node", "server.js"]
