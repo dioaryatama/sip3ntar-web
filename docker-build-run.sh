@@ -49,18 +49,25 @@ echo ""
 # Build Docker image with memory limits and Node options
 echo "[4/6] Building Docker image (optimized for 2GB RAM)..."
 echo "This may take several minutes..."
+echo "Build logs will be displayed below:"
+echo "--------------------------------------"
 docker build \
     --memory="1.8g" \
     --memory-swap="3g" \
     --build-arg NODE_OPTIONS="--max-old-space-size=1536" \
     --progress=plain \
-    -t $IMAGE_NAME .
+    --no-cache \
+    -t $IMAGE_NAME . 2>&1 | tee build.log
 
-if [ $? -ne 0 ]; then
+BUILD_STATUS=${PIPESTATUS[0]}
+
+if [ $BUILD_STATUS -ne 0 ]; then
     echo ""
     echo "======================================"
     echo "Error: Docker build failed!"
     echo "======================================"
+    echo "Build log has been saved to: build.log"
+    echo ""
     echo "Troubleshooting tips:"
     echo "1. Check if swap is enabled: free -h"
     echo "2. Add swap if needed:"
@@ -69,11 +76,14 @@ if [ $? -ne 0 ]; then
     echo "   sudo mkswap /swapfile"
     echo "   sudo swapon /swapfile"
     echo "3. Check disk space: df -h"
-    echo "4. Check Docker logs: docker logs $CONTAINER_NAME"
+    echo "4. Review build log: cat build.log"
+    echo "5. Check Docker logs: docker logs $CONTAINER_NAME"
     echo "======================================"
     exit 1
 fi
+echo "--------------------------------------"
 echo "Build successful!"
+echo "Build log saved to: build.log"
 echo ""
 
 # Run Docker container with resource limits
@@ -123,6 +133,7 @@ echo "  Stop:             docker stop $CONTAINER_NAME"
 echo "  Start:            docker start $CONTAINER_NAME"
 echo "  Restart:          docker restart $CONTAINER_NAME"
 echo "  Remove:           docker rm -f $CONTAINER_NAME"
+echo "  View build log:   cat build.log"
 echo ""
 echo "Resource limits:"
 echo "  Build:    1.8GB RAM (3GB with swap)"
