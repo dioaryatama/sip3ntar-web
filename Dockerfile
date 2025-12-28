@@ -1,24 +1,29 @@
 # Stage 1: Dependencies
 FROM node:20-alpine AS deps
 WORKDIR /app
+
+# Install dependencies only untuk production
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Set memory limit untuk build
-ENV NODE_OPTIONS="--max-old-space-size=1800"
+# Set memory limit untuk build (optimized untuk RAM 2GB)
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 ENV GENERATE_SOURCEMAP=false
 
-COPY --from=deps /app/node_modules ./node_modules
+# Install semua dependencies (including dev)
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts && npm cache clean --force
+
 COPY . .
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build aplikasi
+# Build aplikasi dengan optimasi memory
 RUN npm run build
 
 # Stage 3: Runner
@@ -27,23 +32,19 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=8080
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy semua yang diperlukan untuk running
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
-RUN chown -R nextjs:nodejs /app
+# Copy standalone output untuk image lebih kecil
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 8080
 
-ENV PORT=3000
-
-# Jalankan dengan npm start
-CMD ["npm", "start"]
+# Jalankan dengan node server.js (lebih efisien dari npm start)
+CMD ["node", "server.js"]
